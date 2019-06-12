@@ -1,7 +1,5 @@
 <!-- File: /app/View/Users/login.ctp -->
 
-user_info
-no maste branch
 <div class='users form'>
 <?php echo $this->Flash->render('auth'); ?>
 <?php echo $this->Form->create('User'); ?>

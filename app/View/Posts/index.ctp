@@ -17,8 +17,17 @@
     <tr>
         <?php //投稿IDを表示 ?>
         <td><?php echo $post['Post']['id']; ?></td>
-        <?php //投稿している人の名前を表示?>
-        <td><?php echo $post['User']['username']; ?></td>
+        <?php //投稿している人の名前をリンクで表示?>
+        <td>
+            <?php
+                 echo $this->Html->link(
+                    $post['User']['username'],
+                    array('controller' => 'users', 
+                          'action' => 'view',
+                          $post['Post']['id'])
+                 );
+            ?>
+        </td>
         <td>
             <?php 
                 //タイトルにリンクを作成

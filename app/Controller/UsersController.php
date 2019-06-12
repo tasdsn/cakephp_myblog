@@ -25,6 +25,24 @@ class UsersController extends AppController {
         $this->redirect($this->Auth->logout());
     }
 
+    public function index() {
+        $this->User->recursive = 0;
+        $this->set('users', $this->paginate());
+    }
+
+    public function view($id = null) {
+        $this->User->id = $id;
+        if (!$this->User->exists()) {
+            throw new NotFoundException(__('Invalid user'));
+        }
+         //Userモデルのメソッドを呼ぶ
+       $user = $this->User->findById($id);
+       if (!$user) {
+           throw new NotFoundException(__('Invalid post'));
+       }
+       $this->set('user', $user);
+    }
+
     public function add() {
         //post送信があるかどうか判定
         if ($this->request->is('post')) {
@@ -46,6 +64,7 @@ class UsersController extends AppController {
         }
         if ($this->request->is('post') || $this->request->is('put')) {
             if ($this->User->save($this->request->data)) {
+                $this->Flash->success(__('The user has been saved'));
                 return $this->redirect(array('action' => 'index'));
             }
             $this->Flash->error(
@@ -56,22 +75,6 @@ class UsersController extends AppController {
             //$this->request->data['keyword']で取得できる
             unset($this->request->data['User']['password']);
         }
-    }
-
-    public function delete($id = null) {
-
-        $this->request->allowMethod('post');
-
-        $this->User->id = $id;
-        if (!$this->User->exists()) {
-            throw new NotFoundException(__('Invalid user'));
-        }
-        if ($this->User->delete()) {
-            $this->Flash->success(__('User deleted'));
-            return $this->redirect(array('action' => 'index'));
-        }
-        $this->Flash->error(__('User was not deleted'));
-        return $this->redirect(array('action' => 'index'));
     }
 }
 
