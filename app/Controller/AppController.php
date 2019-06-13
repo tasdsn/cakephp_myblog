@@ -36,6 +36,7 @@ class AppController extends Controller {
 
    public $components = array(
         'Flash',
+        'DebugKit.Toolbar',
         'Auth' => array(
             'loginRedirect' => array('controller' => 'posts', 'action' => 'index'),
             'logoutRedirect' => array(
@@ -52,6 +53,7 @@ class AppController extends Controller {
         )
    );
 
+   //indexとviewは誰でもアクセス可能
    public function beforeFilter() {
        $this->Auth->allow('index', 'view');
    }

@@ -24,7 +24,7 @@
                     $post['User']['username'],
                     array('controller' => 'users', 
                           'action' => 'view',
-                          $post['Post']['id'])
+                          $post['User']['id'])
                  );
             ?>
         </td>

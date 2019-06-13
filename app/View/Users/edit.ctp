@@ -1,9 +1,14 @@
 <!-- app/View/Users/edit.ctp -->
 <h1>Edit Post</h1>
 <?php
-echo $this->Form->create('Post');
-echo $this->Form->input('title');
-echo $this->Form->input('body', array('rows' => '3'));
-echo $this->Form->input('id', array('type' => 'hidden'));
-echo $this->Form->end('Save Post');
+echo $this->Form->create('Document', array('enctype' => 'multipart/form-data'));
+//echo $this->Form->input('image', array('type' => 'file'));
+echo $this->Form->input('image', array('type' => 'file'));
+echo $this->Form->create('User');
+
+echo $this->Form->input('comment');
+echo $this->Form->end('Save User');
 ?>
+<p><?php echo $this->Html->link('View', array('controller' => 'users', 'action' => 'view', $user['User']['id'])); ?></p>
+<p><?php echo $this->Html->link('Top', array('controller' => 'posts', 'action' => 'index')); ?></p>
+
