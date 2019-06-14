@@ -40,13 +40,6 @@ class UsersController extends AppController {
        }
        $this->set('user', $user);
        $this->set('login_user', $login_user);
-       $img = $this->User->findById($id);
-       debug($img);
-       exit;
-       if (!$img) {
-           return $this->set('img', '未登録');
-       }
-       $this->set('img', $img);
     }
 
     public function add() {
@@ -76,37 +69,34 @@ class UsersController extends AppController {
             throw new NotFoundException(__('Invalid user'));
         }
         if ($this->request->is('post') || $this->request->is('put')) {
-            //保存先のパスを保存、WWW_ROOTはwebrootを示します。
-            $path = WWW_ROOT . 'img/';
+            
            
-
-            $this->User->save($this->request->data);
             //アップロードしたファイルの名前を取得します
             $img = $this->request->data['Document']['image']['name'];
-            debug($img);
             //アップロードしたファイルの拡張子を取得
-            $exetension = substr($img, strrpos($img, '.'));
-            debug($exetension);
-            //アップロードを許可するファイルの拡張子を代入します
-            $check_array = array('.jpeg', '.jpg', '.png');
-            debug($check_array);
-            //アップロードされたファイルが画像ファイルかどうかチェック
-            if (!array_search($exetension, $check_array)) {
-                $this->Flash->error(__('Image not updated'));
+            $extension = substr($img, strrpos($img, '.'));
+            
+            //拡張子でアップロードするか判断
+            $check_array = array('.jpg', '.png', '.jpeg');
+            if (!in_array($extension, $check_array)) {
+                $this->Flash->error(__('No image'));
                 return $this->redirect(array('controller' => 'users', 'action' => 'view', $id));
             }
             //ランダムな値を取得
-            $name = (uniqid(mt_rand(), true)) . '.' . $exetension;
+            $name = (uniqid(mt_rand(), true)) . $extension;
+            //保存先のパスを保存、WWW_ROOTはwebrootを示します。
+            $path = WWW_ROOT . 'img/';
             $uploadfile = $path . $name;
             //tmpフォルダ
             $tmp = $this->request->data['Document']['image']['tmp_name'];
             if (!move_uploaded_file($tmp, $uploadfile)) {
                 $this->Flash->error(__('Failed to save image file.'));
-                return $this->redirect(array('controller' => 'users', 'action' => 'view', $id));
             }
+            //フォームデータを保存したら画像の名前を保存
             if ($this->User->save($this->request->data)) {
+                $this->User->set('image_name', $name);
+                $this->User->save();
                 $this->Flash->success(__('The user has been saved'));
-                
                 return $this->redirect(array('controller' => 'users', 'action' => 'view', $id));
             }
             
