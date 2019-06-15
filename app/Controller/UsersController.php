@@ -69,8 +69,6 @@ class UsersController extends AppController {
             throw new NotFoundException(__('Invalid user'));
         }
         $login_user = $this->Auth->user();
-        debug($login_user['id']);
-        debug($user['User']['id']);
         if ($user['User']['id'] !== $login_user['id']) {
             $this->Flash->error(__('You don\'t have permission.'));
             return $this->redirect(array('controller' => 'users', 'action' => 'view', $id));
