@@ -30,16 +30,16 @@ class UsersController extends AppController {
         if (!$this->User->exists()) {
             throw new NotFoundException(__('Invalid user'));
         }
-       //Userモデルのメソッドを呼ぶ 
-       //ログインユーザーの情報を取得
-       $login_user = $this->Auth->user();
-       //ビューに渡す
-       $user = $this->User->findById($id);
-       if (!$user) {
-           throw new NotFoundException(__('Invalid post'));
-       }
-       $this->set('user', $user);
-       $this->set('login_user', $login_user);
+        //Userモデルのメソッドを呼ぶ 
+        //ログインユーザーの情報を取得
+        $login_user = $this->Auth->user();
+        //ビューに渡す
+        $user = $this->User->findById($id);
+        if (!$user) {
+            throw new NotFoundException(__('Invalid post'));
+        }
+        $this->set('user', $user);
+        $this->set('login_user', $login_user);
     }
 
     public function add() {
@@ -68,6 +68,13 @@ class UsersController extends AppController {
         if (!$this->User->exists()) {
             throw new NotFoundException(__('Invalid user'));
         }
+        $login_user = $this->Auth->user();
+        debug($login_user['id']);
+        debug($user['User']['id']);
+        if ($user['User']['id'] !== $login_user['id']) {
+            $this->Flash->error(__('You don\'t have permission.'));
+            return $this->redirect(array('controller' => 'users', 'action' => 'view', $id));
+        }
         if ($this->request->is('post') || $this->request->is('put')) {
             
            
@@ -80,7 +87,6 @@ class UsersController extends AppController {
             $check_array = array('.jpg', '.png', '.jpeg');
             if (!in_array($extension, $check_array)) {
                 $this->Flash->error(__('No image'));
-                return $this->redirect(array('controller' => 'users', 'action' => 'view', $id));
             }
             //ランダムな値を取得
             $name = (uniqid(mt_rand(), true)) . $extension;
