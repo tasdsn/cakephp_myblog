@@ -1,13 +1,14 @@
 <?php
 //app/Controller/UsersController.php
 App::uses('AppController', 'Controller');
+App::uses('CakeEmail', 'Network/Email'); //1
 
 class UsersController extends AppController {
 
     public function beforeFilter() {
         parent::beforeFilter();
         //ユーザー自身による登録とログアウトと編集を許可する
-        $this->Auth->allow('add', 'logout', 'edit');
+        $this->Auth->allow('add', 'logout', 'edit', 'forgot_pass', 'reconf_pass');
     }
 
     public function login() {
@@ -110,6 +111,77 @@ class UsersController extends AppController {
             unset($this->request->data['User']['password']);
         }
     }
+
+    public function reconf_pass() {
+        //post送信されたか判定
+        if ($this->request->is('post')) {
+            //get送信された値を取得
+            $hash = $this->request->query['hash'];
+            //送信されたhash_passの人の情報を取得
+            $user = $this->User->findByHash_pass($hash);
+
+            //制限時間を取得
+            $limit = $user['User']['limit_time'];
+            //現在時間を取得
+            $now = strtotime('now');
+            //30分以内かつ情報が更新できるか判定
+            if ($limit > $now && $this->User->save($user)) {
+                $this->User->set(array('password' => $this->request->data['User']['password']));
+                $this->User->save();
+                $this->Flash->success(__('The password Update Complete'));
+            } else {
+                $this->Flash->error(__('Incorrect access. Please try again.'));
+            }
+            return $this->redirect(array('controller' => 'users', 'action' => 'login'));
+        }
+       
+    }
+
+    public function forgot_pass() {
+
+        if ($this->request->is('post')) {
+            //入力したメールアドレスを変数に代入
+            $email = $this->request->data['User']['email'];
+            //入力したメールアドレスがデータベースにあるか判定
+            $user = $this->User->findByEmail($email);
+           
+            //ユーザーが存在した場合
+            if ($user) {
+                //ハッシュ処理の計算コストを指定
+                $options = array('cost' => 10);
+                //ランダムなパスワードを生成
+                $pass = (uniqid(mt_rand(), true));
+                //ハッシュ化方式にPASSWORD＿DEFAULTを指定し、パスワードをハッシュ化する。
+                $hash = password_hash($pass, PASSWORD_DEFAULT, $options);
+                //30分後の時間を取得
+                $limit = strtotime('1800 second');
+
+                //データベースに入力したメールアドレスのIDのものを指定し、そこのハッシュと制限時間を更新
+                if ($this->User->save($user)) {
+                    $this->User->set(array(
+                        'hash_pass' => $hash,
+                        'limit_time' => $limit
+                    ));
+                    $this->User->save();
+                
+                    //メールを送信
+                    $Email = new CakeEmail();
+                    $Email->to('phobia4242@gmail.com');
+                    $Email->emailFormat('text');
+                    
+                    $Email->subject('パスワード更新メール');
+                    $messages = $Email->send("下記のURLをクリックしてパスワードを再設定して下さい。\nパスワード再発行URL↓\nhttps://procir-study.site/tada/myblog/users/reconf_pass?hash=" . $hash . "");
+                    $this->set('messages', $messages);
+
+                }
+            }
+            //メールアドレスが存在してもしなくても表示
+            $this->Flash->success(__('Email Sent.'));
+
+        }            
+
+    }
+    
     
 }
 

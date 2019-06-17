@@ -55,6 +55,6 @@ class AppController extends Controller {
 
    //indexとviewは誰でもアクセス可能
    public function beforeFilter() {
-       $this->Auth->allow('index', 'view');
+       $this->Auth->allow('index', 'view', 'forgot_pass');
    }
 }

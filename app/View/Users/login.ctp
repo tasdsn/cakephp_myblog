@@ -15,4 +15,5 @@
 <?php echo $this->Form->end(__('Login')); ?>
 </div>
 <?php echo $this->Html->link('Add User', array('controller' => 'users', 'action' => 'add')); ?><br>
-<?php echo $this->Html->link('Top', array('controller' => 'posts', 'action' => 'index')); ?>
+<?php echo $this->Html->link('Top', array('controller' => 'posts', 'action' => 'index',)); ?>
+<?php echo $this->Html->link('Forgot Password', array('controller' => 'users', 'action' => 'forgot_pass',)); ?>
