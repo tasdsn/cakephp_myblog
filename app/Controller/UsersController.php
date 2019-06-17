@@ -46,8 +46,6 @@ class UsersController extends AppController {
     public function add() {
         //post送信があるかどうか判定
         if ($this->request->is('post')) {
-            //debug($this->request->is('post'));
-            //exit;
             $this->User->create();
             if ($this->User->save($this->request->data)) {
                 $this->Flash->success(__('The user has been saved'));
@@ -100,8 +98,6 @@ class UsersController extends AppController {
                 $this->Flash->error(__('Failed to save image file.'));
             }
             //フォームデータを保存したら画像の名前を保存
-            debug($this->request->data);
-            exit;
             if ($this->User->save($this->request->data)) {
                 $this->User->set('image_name', $name);
                 $this->User->save();
@@ -117,22 +113,39 @@ class UsersController extends AppController {
     }
 
     public function reconf_pass() {
-       //$Email = new
-       if ($this->request->is('get')) {
-           debug($this->request->data);
-       }
+        //post送信されたか判定
+        if ($this->request->is('post')) {
+            //get送信された値を取得
+            $hash = $this->request->query['hash'];
+            //送信されたhash_passの人の情報を取得
+            $user = $this->User->findByHash_pass($hash);
+
+            //制限時間を取得
+            $limit = $user['User']['limit_time'];
+            //現在時間を取得
+            $now = strtotime('now');
+            //30分以内かつ情報が更新できるか判定
+            if ($limit > $now && $this->User->save($user)) {
+                $this->User->set(array('password' => $this->request->data['User']['password']));
+                $this->User->save();
+                $this->Flash->success(__('The password Update Complete'));
+            } else {
+                $this->Flash->error(__('Incorrect access. Please try again.'));
+            }
+            return $this->redirect(array('controller' => 'users', 'action' => 'login'));
+        }
+       
     }
 
     public function forgot_pass() {
 
         if ($this->request->is('post')) {
+            //入力したメールアドレスを変数に代入
             $email = $this->request->data['User']['email'];
-            debug($email);
-
-            //入力したメールアドレスがデータベースにあれば1、なければ0を返す
+            //入力したメールアドレスがデータベースにあるか判定
             $user = $this->User->findByEmail($email);
-            debug($user);
            
+            //ユーザーが存在した場合
             if ($user) {
                 //ハッシュ処理の計算コストを指定
                 $options = array('cost' => 10);
@@ -141,11 +154,8 @@ class UsersController extends AppController {
                 //ハッシュ化方式にPASSWORD＿DEFAULTを指定し、パスワードをハッシュ化する。
                 $hash = password_hash($pass, PASSWORD_DEFAULT, $options);
                 //30分後の時間を取得
-                $limit = strtotime("1800 second");
+                $limit = strtotime('1800 second');
 
-                debug($limit);
-                //データを保存
-                
                 //データベースに入力したメールアドレスのIDのものを指定し、そこのハッシュと制限時間を更新
                 if ($this->User->save($user)) {
                     $this->User->set(array(
@@ -154,18 +164,20 @@ class UsersController extends AppController {
                     ));
                     $this->User->save();
                 
-                    
+                    //メールを送信
                     $Email = new CakeEmail();
                     $Email->to('phobia4242@gmail.com');
                     $Email->emailFormat('text');
                     
-                    $Email->subject('これはテストメールです');
+                    $Email->subject('パスワード更新メール');
                     $messages = $Email->send("下記のURLをクリックしてパスワードを再設定して下さい。\nパスワード再発行URL↓\nhttps://procir-study.site/tada/myblog/users/reconf_pass?hash=" . $hash . "");
                     $this->set('messages', $messages);
-                    $this->Flash->success(__('Email Sent.'));
 
                 }
             }
+            //メールアドレスが存在してもしなくても表示
+            $this->Flash->success(__('Email Sent.'));
+
         }            
 
     }
