@@ -115,7 +115,11 @@ class UsersController extends AppController {
     public function reconf_pass() {
         //post送信されたか判定
         if ($this->request->is('post')) {
-            //get送信された値を取得
+            //get送信された値を取得hashがなければログイン画面へリダイレクト
+            if (!$this->request->query['hash']) {
+                $this->Flash->error(__('Incorrect access. Please try again.'));
+                return $this->redirect(array('controller' => 'users', 'action' => 'login'));
+            }
             $hash = $this->request->query['hash'];
             //送信されたhash_passの人の情報を取得
             $user = $this->User->findByHash_pass($hash);
@@ -126,7 +130,11 @@ class UsersController extends AppController {
             $now = strtotime('now');
             //30分以内かつ情報が更新できるか判定
             if ($limit > $now && $this->User->save($user)) {
-                $this->User->set(array('password' => $this->request->data['User']['password']));
+                //成功すれば新しいパスワードと制限時間を過去に更新
+                $this->User->set(array(
+                                        'password' => $this->request->data['User']['password'],
+                                        'limit_time' => strtotime('-1 hour')
+                                    ));
                 $this->User->save();
                 $this->Flash->success(__('The password Update Complete'));
             } else {
