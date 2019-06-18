@@ -8,4 +8,5 @@
         <?php echo $this->Form->input('password'); ?>
     </fieldset>
 <?php echo $this->Form->end(__('Reset')); ?>
+<?php echo $this->Html->link('Top', array('controller' => 'posts', 'action' => 'index')); ?>
     
