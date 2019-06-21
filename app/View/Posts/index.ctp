@@ -1,5 +1,4 @@
 <!--File: /app/View/Posts/index.ctp -->
-
 <h1>Blog posts</h1>
 <p><?php echo $this->Html->link('Add Post', array('action' => 'add')); ?></p>
 <table>
